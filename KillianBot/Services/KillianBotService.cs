@@ -1,30 +1,50 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Net.Http;
+using Newtonsoft.Json;
+using System.Net;
+using KillianBot.Services;
+using System.Reflection;
+using System.IO;
+using System;
 
 namespace KillianBot.Services
 {
     class KillianBotService
     {
-        public class monthsOfYear
+        public class DefinitionGet
         {
-            //Do we still need this?
-            public readonly static Dictionary<string, int> monthDict = new Dictionary<string,int>
+            private static HttpClient client = new HttpClient();
+
+            public static async Task<Collections.DictionaryList> GetDef(string word)
             {
-                {"January", 1},
-                {"Febuary", 2},
-                {"March", 3},
-                {"April", 4},
-                {"May", 5},
-                {"June", 6},
-                {"July", 7},
-                {"August", 8},
-                {"September", 9},
-                {"October", 10},
-                {"November", 11},
-                {"December", 12},
-            };
+                string url = Collections.Config.DictionaryApi;
+                word = WebUtility.UrlEncode(word.Trim());
+                string lang = WebUtility.UrlEncode(Collections.Config.DictionaryLang);
+
+                var JsonReturn = await client.GetStringAsync(url + word + lang);
+                return JsonConvert.DeserializeObject<Collections.DictionaryList>(JsonReturn);
+            }
         }
+
+        public class ConfigGet
+        {
+            public static void GetConfig()
+            {
+                var results = JsonConvert.DeserializeObject<Collections.ConfigList>(File.ReadAllText(@"C:\Users\Killian\Desktop\KillianBot\bin\Debug\netcoreapp2.0/config.json"));
+                Collections.Config.BotToken = results.BotToken;
+                Collections.Config.BirthdayFileName = results.BirthdayFileName;
+                Collections.Config.DictionaryApi = results.DictionaryApi;
+                Collections.Config.DictionaryLang = results.DictionaryLang;
+                Collections.Config.CommandLetter = results.CommandLetter;
+                Collections.Config.MerriamBase = results.MerriamBase;
+                Collections.Config.GoogleFirst = results.GoogleFirst;
+                Collections.Config.GoogleSecond = results.GoogleSecond;
+                Collections.Config.WordTypes = results.WordTypes;
+                Collections.Config.NumWordTypes = results.NumWordTypes;
+            }
+        }
+
     }
+
 }
